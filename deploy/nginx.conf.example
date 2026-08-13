@@ -1,0 +1,90 @@
+# nginx reverse proxy for AI Analyzer V3.
+#
+#   sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/ai-analyzer
+#   sudo ln -s /etc/nginx/sites-available/ai-analyzer /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+#
+# Two things this file is responsible for that the app cannot do itself:
+#   1. TLS and authentication.
+#   2. Websocket upgrade -- Streamlit holds an open websocket for the whole
+#      session. Without the Upgrade/Connection headers below the UI loads and
+#      then hangs at "Connecting...", which is the single most common
+#      misconfiguration.
+
+upstream ai_analyzer {
+    server 127.0.0.1:8501;
+    keepalive 32;
+}
+
+server {
+    listen 80;
+    server_name analyzer.example.com;
+    # Everything goes over TLS.
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name analyzer.example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/analyzer.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/analyzer.example.com/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+
+    # A question can take tens of seconds on an 8B. Do not cut the connection
+    # while the model is still generating.
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+
+    # Result tables and chart PNGs; nothing is uploaded.
+    client_max_body_size 8m;
+
+    location / {
+        # --- Authentication -------------------------------------------------
+        # Replace with whatever your organisation uses (OIDC via oauth2-proxy,
+        # LDAP, mTLS). Basic auth shown because it is the smallest complete
+        # example, not because it is the recommendation.
+        auth_basic           "AI Analyzer";
+        auth_basic_user_file /etc/nginx/ai-analyzer.htpasswd;
+
+        # --- Identity handoff ------------------------------------------------
+        # SECURITY: the first line is not optional. It clears any
+        # X-Forwarded-User the *client* sent, so only the value nginx sets from
+        # a real authentication result reaches the app. Without it, a user can
+        # name themselves anyone and read that person's stored chats.
+        #
+        # Only set these two lines if AUTH_HEADER=X-Forwarded-User is
+        # configured in the app's environment. Leave AUTH_HEADER empty for a
+        # single-user install.
+        proxy_set_header X-Forwarded-User "";
+        proxy_set_header X-Forwarded-User $remote_user;
+
+        proxy_pass http://ai_analyzer;
+        proxy_http_version 1.1;
+
+        # --- Websocket upgrade (required) ------------------------------------
+        proxy_set_header Upgrade    $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_buffering off;
+    }
+
+    # Streamlit's own health endpoint, used by orchestration probes. It reports
+    # that the web process is up -- not that the model or data are usable, which
+    # is what `ai-analyzer doctor` is for.
+    location /_stcore/health {
+        auth_basic off;
+        proxy_pass http://ai_analyzer;
+        access_log off;
+    }
+}

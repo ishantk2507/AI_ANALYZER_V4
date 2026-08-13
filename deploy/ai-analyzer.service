@@ -1,0 +1,68 @@
+# systemd unit for the AI Analyzer web UI.
+#
+#   sudo cp deploy/ai-analyzer.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now ai-analyzer
+#   systemctl status ai-analyzer
+#   journalctl -u ai-analyzer -f
+#
+# Assumes the layout in docs/DEPLOYMENT.md:
+#   /srv/ai-analyzer/app      the checkout, with .venv inside it
+#   /srv/ai-analyzer/data     source data, mounted read-only
+#   /srv/ai-analyzer/state    SQLite store, cache, outputs
+#   /etc/ai-analyzer/production.env   configuration (chmod 640, root:ai-analyzer)
+
+[Unit]
+Description=AI Analyzer V3 (local data analyst)
+Documentation=file:///srv/ai-analyzer/app/docs/DEPLOYMENT.md
+# Ollama is a separate service. Wants= rather than Requires= so the app still
+# starts and reports a useful error if Ollama is briefly down.
+After=network-online.target ollama.service
+Wants=network-online.target ollama.service
+
+[Service]
+Type=simple
+User=ai-analyzer
+Group=ai-analyzer
+WorkingDirectory=/srv/ai-analyzer/app
+
+EnvironmentFile=/etc/ai-analyzer/production.env
+
+# Bind to loopback only. The reverse proxy is what faces the network -- the app
+# has no authentication of its own, so anything that can reach this port can
+# read every chat in the store.
+ExecStart=/srv/ai-analyzer/app/.venv/bin/ai-analyzer-ui \
+    --server.address 127.0.0.1 \
+    --server.port 8501
+
+Restart=on-failure
+RestartSec=5s
+# Streamlit stops promptly; do not let a hung model call block a restart forever.
+TimeoutStopSec=30
+
+# --- Hardening -------------------------------------------------------------
+# The app reads data and writes its own state. It needs nothing else.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+# The only writable paths.
+ReadWritePaths=/srv/ai-analyzer/state /var/log/ai-analyzer
+ReadOnlyPaths=/srv/ai-analyzer/data
+# Outbound to Ollama over loopback or a private network; no raw sockets.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+# Matplotlib must not look for a display, and must not try to write a font
+# cache into a home directory ProtectHome has made unavailable.
+Environment=MPLBACKEND=Agg
+Environment=MPLCONFIGDIR=/srv/ai-analyzer/state/matplotlib
+
+[Install]
+WantedBy=multi-user.target

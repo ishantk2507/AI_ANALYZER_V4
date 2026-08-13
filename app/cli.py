@@ -87,7 +87,7 @@ def doctor() -> None:
             "llama-cpp gpu",
             "[green]ok[/green]" if gpu else "[yellow]cpu only[/yellow]",
             "CUDA offload available" if gpu
-            else "installed wheel is CPU-only; see the README for the CUDA wheel",
+            else "installed wheel is CPU-only; see docs/DEPLOYMENT.md for the CUDA wheel",
         )
     except ImportError:
         row("llama-cpp", False, "llama-cpp-python is not installed")

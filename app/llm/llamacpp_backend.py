@@ -57,7 +57,7 @@ class LlamaCppBackend(LLMBackend):
         if not self._gpu:
             log.warning(
                 "llama-cpp-python was built without GPU offload; running on CPU. "
-                "See the README for the CUDA wheel."
+                "See docs/DEPLOYMENT.md for the CUDA wheel."
             )
 
         log.info("Loading %s (n_ctx=%d, n_gpu_layers=%d)",

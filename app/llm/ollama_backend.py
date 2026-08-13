@@ -1,7 +1,7 @@
 """Ollama backend.
 
-Ollama ships with CUDA, so this is the path that actually uses the RTX 3060
-without compiling anything. The local GGUF is registered once via a Modelfile.
+Ollama ships with CUDA, so this is the path that reaches the GPU without
+compiling anything. The local GGUF is registered once via a Modelfile.
 """
 
 from __future__ import annotations

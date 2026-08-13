@@ -1,5 +1,10 @@
 # Architecture
 
+This describes *what* the system does. For *why* it is shaped this way — why the
+pipeline is fixed rather than agentic, why findings are computed rather than
+written, and the model benchmarks behind the recommended quantisation — see
+[Design decisions](DESIGN-DECISIONS.md).
+
 ## Purpose and boundaries
 
 AI Analyzer turns questions into safe, deterministic analysis over local CSV or

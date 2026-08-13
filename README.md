@@ -132,20 +132,44 @@ python -m pytest
 python -m ruff check app tests scripts
 ```
 
-GitHub Actions runs the test suite on Python 3.10–3.12 and validates the locked
-dependency set on Python 3.11. See [Operations](docs/OPERATIONS.md) for release
-and backup procedures, and [Architecture](docs/ARCHITECTURE.md) for the system
-design.
+433 tests, none of which need a model, a GPU, or a network. GitHub Actions runs
+them on Python 3.10–3.12 and validates the locked dependency set on 3.11.
+
+**Before changing the analysis pipeline, read
+[Design decisions](docs/DESIGN-DECISIONS.md).** Most of the guards in
+`app/agent/` exist because the real model produced a specific wrong answer, and
+[Testing](docs/TESTING.md) catalogues which failure each one prevents.
+
+## Documentation
+
+| Document | What it covers |
+|---|---|
+| [Architecture](docs/ARCHITECTURE.md) | Module map, the `AnalysisSpec` boundary, data lifecycle, failure handling |
+| [Design decisions](docs/DESIGN-DECISIONS.md) | Why the pipeline is fixed rather than agentic, why insights are computed, model benchmarks, known limitations |
+| [Configuration](docs/CONFIGURATION.md) | Every setting, its default, and when to change it |
+| [Data format](docs/DATA_FORMAT.md) | What the catalog discovers and how files are profiled |
+| [Deployment](docs/DEPLOYMENT.md) | Server install, reverse proxy, authentication, Docker |
+| [Operations](docs/OPERATIONS.md) | Running, monitoring, backup, release procedure |
+| [Testing](docs/TESTING.md) | Suite layout, the regression table, test conventions |
 
 ## Repository map
 
 ```text
 app/           Application source: UI, CLI, analysis pipeline, data catalog, LLM adapters
 tests/         Unit and integration-style tests using a stub LLM
+docs/          Architecture, design decisions, configuration, deployment, operations, testing
+deploy/        systemd unit and nginx reverse-proxy example
 modelfiles/    Ollama templates for supported GGUF files
 scripts/       Maintenance utilities, including model benchmarks
-docs/          Handoff, architecture, configuration, deployment, and operations docs
+models/        Where to put the GGUF (contents gitignored)
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). In short: `pytest` and `ruff check` must
+pass, and read [Design decisions](docs/DESIGN-DECISIONS.md) before touching the
+agent or analysis layers — most of the code there is load-bearing for a reason
+that is written down.
 
 ## License
 

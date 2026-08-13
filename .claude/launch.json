@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "ai-analyzer-ui",
-      "runtimeExecutable": "python",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
       "runtimeArgs": [
         "-m",
         "streamlit",

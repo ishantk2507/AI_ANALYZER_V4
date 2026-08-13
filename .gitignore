@@ -1,48 +1,127 @@
-# --- Secrets and local configuration ----------------------------------------
+# =============================================================================
+# Secrets and local configuration
+# =============================================================================
+# `.env` holds machine paths and, on a server, the auth header name. The
+# *.example templates below are deliberately NOT ignored -- they are the
+# documentation for what belongs in a real one.
 .env
+.env.local
+.env.*.local
+.env.production
+.env.development
+!.env.example
+!.env.production.example
+
 .streamlit/secrets.toml
 
-# --- Virtual environments ----------------------------------------------------
+# Editor-local agent settings; .claude/launch.json is committed on purpose.
+.claude/settings.local.json
+
+# =============================================================================
+# Virtual environments
+# =============================================================================
 .venv/
+.venv*/
 venv/
 env/
+ENV/
+.python-version
+.tox/
+.nox/
 
-# --- Python ------------------------------------------------------------------
+# =============================================================================
+# Python
+# =============================================================================
 __pycache__/
 *.py[cod]
-*.egg-info/
+*$py.class
+*.so
+.Python
 build/
 dist/
+sdist/
+wheels/
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+
+# Test and lint caches
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.dmypy.json
+.hypothesis/
 .coverage
+.coverage.*
+coverage.xml
 htmlcov/
+*.cover
 
-# --- Large binaries ----------------------------------------------------------
-# The GGUF is 2-5GB and is fetched per machine, never committed.
+# =============================================================================
+# Large binaries -- never committed, fetched or mounted per machine
+# =============================================================================
+# The GGUF is 2-5GB. Drop it in models/; the directory itself is tracked so the
+# path exists in a fresh clone.
 models/*
 !models/.gitkeep
 *.gguf
+*.bin
+*.safetensors
+
 # The dataset tree is data, not source. Point DATA_DIR at it instead.
+# See docs/DATA_FORMAT.md.
 data/
 
-# --- Generated at runtime (all safely regenerable) ---------------------------
+# =============================================================================
+# Generated at runtime
+# =============================================================================
+# All of the following is safely deletable; the app rebuilds it. See the
+# "What may be cleaned" section of docs/OPERATIONS.md.
 outputs/
 logs/
+*.log
 .cache/
-# Default STORE_PATH lives here; the whole directory is per-machine state.
+
+# Default STORE_PATH lives here -- per-machine state, not source.
 var/
-# The chat / user-memory store.
+
+# The chat / user-memory store. NOT regenerable: back this up, do not commit it.
 *.db
 *.db-journal
 *.db-wal
 *.db-shm
+*.sqlite
+*.sqlite3
 
-# --- Editors and OS ----------------------------------------------------------
+# Matplotlib font cache, when MPLCONFIGDIR points into the checkout.
+.matplotlib/
+
+# =============================================================================
+# Notebooks
+# =============================================================================
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# =============================================================================
+# Editors and OS
+# =============================================================================
 .vscode/
+!.vscode/extensions.json
 .idea/
 *.swp
+*.swo
+*~
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
+ehthumbs.db
 desktop.ini
+
+# Merge and patch leftovers
+*.orig
+*.rej
+*.bak
