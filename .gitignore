@@ -1,0 +1,48 @@
+# --- Secrets and local configuration ----------------------------------------
+.env
+.streamlit/secrets.toml
+
+# --- Virtual environments ----------------------------------------------------
+.venv/
+venv/
+env/
+
+# --- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- Large binaries ----------------------------------------------------------
+# The GGUF is 2-5GB and is fetched per machine, never committed.
+models/*
+!models/.gitkeep
+*.gguf
+# The dataset tree is data, not source. Point DATA_DIR at it instead.
+data/
+
+# --- Generated at runtime (all safely regenerable) ---------------------------
+outputs/
+logs/
+.cache/
+# Default STORE_PATH lives here; the whole directory is per-machine state.
+var/
+# The chat / user-memory store.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# --- Editors and OS ----------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

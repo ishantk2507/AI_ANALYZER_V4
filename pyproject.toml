@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-analyzer-v3"
+version = "3.0.0"
+description = "A fully local agentic data analyst for quantised GGUF models."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+keywords = ["llm", "local-first", "data-analysis", "gguf", "ollama", "streamlit"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: GPU :: NVIDIA CUDA",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+
+# Kept in step with requirements.txt. That file is what a contributor installs;
+# this is what `pip install -e .` resolves. requirements.lock.txt is the exact
+# tested set, for CI and production.
+dependencies = [
+    "pandas>=2.2,<4",
+    "numpy>=1.26,<3",
+    "pyarrow>=15.0,<25",
+    "matplotlib>=3.8,<4",
+    "seaborn>=0.13,<1",
+    "altair>=5.0,<7",
+    "pydantic>=2.7,<3",
+    "pydantic-settings>=2.2,<3",
+    "typer>=0.12,<1",
+    "rich>=13.7,<16",
+    "streamlit>=1.35,<2",
+]
+
+[project.optional-dependencies]
+# At least one backend is required. `ollama` is the recommended one: it reaches
+# the GPU without compiling anything.
+ollama = ["ollama>=0.3,<1"]
+llama-cpp = ["llama-cpp-python>=0.3,<1"]
+dev = [
+    "pytest>=8.0,<10",
+    "pytest-cov>=5.0,<8",
+    "ruff>=0.6,<1",
+]
+all = ["ollama>=0.3,<1", "llama-cpp-python>=0.3,<1"]
+
+[project.scripts]
+ai-analyzer = "app.cli:main"
+ai-analyzer-ui = "app.launcher:main"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+# Correctness rules, not restyling ones. `UP` (pyupgrade) is deliberately absent:
+# it wants 326 annotations rewritten from `List[str]` to `list[str]`, which every
+# module already makes work via `from __future__ import annotations`. That is
+# churn across the whole codebase in exchange for nothing a reader would notice.
+select = ["E", "F", "W", "I", "B"]
+ignore = [
+    "E501",  # line length is the formatter's job, not the linter's
+    "B008",  # typer's Argument()/Option() defaults are the documented idiom
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Streamlit runs ui.py as a script, so the sys.path bootstrap has to precede
+# the imports it enables.
+"app/ui.py" = ["E402"]
+
+[tool.black]
+line-length = 100

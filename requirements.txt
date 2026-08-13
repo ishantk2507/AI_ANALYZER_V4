@@ -1,0 +1,34 @@
+# Runtime dependencies, as version ranges.
+#
+# For a reproducible install -- CI, or a server deploy -- use the exact tested
+# set instead:  pip install -r requirements.lock.txt
+#
+# Upper bounds are deliberate: this project is being handed over, and a future
+# major of pandas or pydantic should fail loudly at install time rather than
+# quietly at question time.
+
+# --- Core data stack ---------------------------------------------------------
+pandas>=2.2,<4
+numpy>=1.26,<3
+pyarrow>=15.0,<25
+
+# --- Visualisation -----------------------------------------------------------
+matplotlib>=3.8,<4        # PNG charts, for the CLI and the download button
+seaborn>=0.13,<1          # palettes only
+altair>=5.0,<7            # Vega-Lite charts in the UI (hover tooltips)
+
+# --- Config / CLI / UI -------------------------------------------------------
+pydantic>=2.7,<3
+pydantic-settings>=2.2,<3
+typer>=0.12,<1
+rich>=13.7,<16
+streamlit>=1.35,<2
+
+# --- Inference backends ------------------------------------------------------
+# At least one is required.
+#   ollama            -> talks to a running Ollama server; GPU works out of the
+#                        box and this is the recommended path.
+#   llama-cpp-python  -> in-process GGUF. The default PyPI wheel is CPU-only;
+#                        see docs/DEPLOYMENT.md for the CUDA wheel.
+ollama>=0.3,<1
+llama-cpp-python>=0.3,<1

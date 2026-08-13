@@ -1,0 +1,16 @@
+# Ollama Modelfile - Ministral 8B IQ4_XS (the recommended quality/speed pick).
+#
+#   ~5.4GB VRAM at num_ctx 4096 | ~50 tok/s on a 6GB RTX 3060
+#
+# Faster than the 8B Q4_K_M (less weight to read per token) and leaves 567MB of
+# VRAM spare against Q4_K_M's 103MB -- the margin that survives a browser
+# opening. See docs/ARCHITECTURE.md for the runtime design.
+#
+#   ollama create ai-analyzer-ministral-8b-iq4 -f modelfiles/ministral-8b-iq4
+#
+# FROM is resolved relative to this file.
+
+FROM ../models/Ministral-3-8B-Instruct-2512-IQ4_XS.gguf
+
+PARAMETER num_ctx 4096
+PARAMETER temperature 0

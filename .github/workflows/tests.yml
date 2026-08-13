@@ -1,0 +1,65 @@
+name: tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        # No inference backend: the whole suite runs against a stub, which is
+        # what makes it fast enough to gate a pull request on. Installing
+        # llama-cpp-python here would mean compiling it for no benefit.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check app tests scripts
+
+      - name: Test
+        # MPLBACKEND stops matplotlib looking for a display it will not find.
+        env:
+          MPLBACKEND: Agg
+        run: pytest -q --cov=app --cov-report=term-missing
+
+  # The tested set from requirements.lock.txt, on the one version it was pinned
+  # against. Catches a lock file that has drifted from pyproject.
+  locked:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: |
+          python -m pip install --upgrade pip
+          # The lock pins llama-cpp-python, which needs a compiler and is not
+          # exercised by the suite.
+          grep -iv '^llama' requirements.lock.txt > /tmp/locked.txt
+          pip install -r /tmp/locked.txt
+          pip install -e . --no-deps
+      - env:
+          MPLBACKEND: Agg
+        run: pytest -q

@@ -1,0 +1,16 @@
+# Ollama Modelfile - Ministral 3B Q4_K_M (the default, smallest, fastest).
+#
+#   ~2.3GB VRAM at num_ctx 4096 | ~86 tok/s on a 6GB RTX 3060
+#
+# Register it with:
+#   ollama create ai-analyzer-ministral -f modelfiles/ministral-3b
+#
+# The app does this for you on first run when OLLAMA_AUTO_CREATE=true.
+#
+# FROM is resolved relative to this file. Drop the GGUF into <project>/models/,
+# or replace the path below with an absolute one.
+
+FROM ../models/Ministral-3-3B-Instruct-2512-Q4_K_M.gguf
+
+PARAMETER num_ctx 4096
+PARAMETER temperature 0

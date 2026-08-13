@@ -1,0 +1,39 @@
+# Streamlit configuration.
+#
+# Committed on purpose: these are the settings that make the app behave the same
+# on a server as on a laptop. Anything secret belongs in .streamlit/secrets.toml,
+# which is gitignored.
+#
+# Every value here can be overridden on the command line
+# (--server.port 8600) or by environment variable (STREAMLIT_SERVER_PORT=8600).
+
+[server]
+port = 8501
+# Loopback by default. A server deploy should keep this and put a reverse proxy
+# in front rather than binding 0.0.0.0 -- the app has no authentication of its
+# own, so anything that can reach the port can read every chat on it.
+# See docs/DEPLOYMENT.md.
+address = "localhost"
+headless = true
+# The UI holds an open websocket while a question runs. A 3B answers in seconds
+# and an 8B in tens of seconds, so the default 200MB upload cap is irrelevant
+# here but the timeout is not.
+enableCORS = true
+enableXsrfProtection = true
+# Charts and result tables are regenerated per run; nothing here is uploaded.
+maxUploadSize = 5
+
+[browser]
+gatherUsageStats = false
+
+[runner]
+# Long analyses should not be interrupted by a stray rerun.
+fastReruns = false
+
+[client]
+# Do not expose stack traces or local paths to browser clients. Developers can
+# still inspect the rotating application log.
+showErrorDetails = false
+
+[logger]
+level = "info"

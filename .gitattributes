@@ -1,0 +1,24 @@
+# Normalise line endings so a repo authored on Windows still works on a Linux
+# server. Without this, `run_ui.sh` checks out with CRLF and the kernel reads
+# "#!/usr/bin/env bash\r" as an interpreter that does not exist.
+
+* text=auto eol=lf
+
+# Shell scripts and container files are read by Linux tooling: always LF.
+*.sh        text eol=lf
+Dockerfile  text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+
+# Ollama Modelfiles have no extension; mark them explicitly.
+modelfiles/* text eol=lf
+
+# Windows batch files must keep CRLF or cmd.exe mis-parses multi-line blocks.
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+
+# Binary: never touch.
+*.png       binary
+*.parquet   binary
+*.gguf      binary
+*.db        binary
