@@ -241,6 +241,10 @@ them on Python 3.10–3.12 and validates the locked dependency set on 3.11.
 | [Operations](docs/OPERATIONS.md) | Running, monitoring, backup, release procedure |
 | [Testing](docs/TESTING.md) | Suite layout, the regression table, test conventions |
 
+## Project handbook
+
+The product and solo-development operating docs live in the [project handbook](docs/README.md): product brief, roadmap, prioritized backlog, solo-dev playbook, evaluation plan, observability, workflow runtime design, security/privacy, release checklist, and ADR template.
+
 ## Repository map
 
 ```text
